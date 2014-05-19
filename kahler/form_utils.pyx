@@ -1,4 +1,4 @@
-__all__ = ['wedge', 'derham_map', 'parity']
+__all__ = ['wedge', 'derham_map', 'parity', 'naive_derham_map']
 
 from numpy import arange, asarray, tensordot, zeros, linspace
 from itertools import product, combinations, permutations, groupby
@@ -81,3 +81,22 @@ def derham_map(fun, points, subdivisions=1):
         integral += asarray(parmapreduce(lambda x: asarray(list(map(fun, x + ref))), bary)) * f
 
     return integral / integration_factor
+
+def naive_derham_map(fun, points, subdivisions=1):
+    dim = points.shape[1] - 1
+
+    if not dim:
+        return (1, asarray(parmap(fun, points[:, 0])))
+
+    interior = asarray([x for x in product(*[linspace(0, 1, subdivisions, endpoint=False)[1:]] * dim) if sum(x) < 1])
+
+    if not len(interior):
+        return (0, 0)
+
+    coordinates = points.swapaxes(0, 1)
+    ref = coordinates[0]
+    c2 = coordinates[1:] - ref
+
+    bary = tensordot(interior, c2, 1)
+
+    return (len(interior), asarray(parmapreduce(lambda x: asarray(list(map(fun, x + ref))), bary)))

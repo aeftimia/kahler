@@ -1,14 +1,14 @@
 __all__ = ['Skeleton']
 
 from numpy import asarray, zeros, ones, empty, sqrt, arange, int8, sqrt
-from scipy.sparse import csr_matrix, dia_matrix, dok_matrix, coo_matrix
+from scipy.sparse import csr_matrix, dia_matrix, lil_matrix, coo_matrix
 from scipy.linalg._flinalg import zdet_r
 from scipy.misc import factorial
 from itertools import combinations
 from functools import reduce
 from operator import or_
 
-from .form_utils import wedge, derham_map
+from .form_utils import wedge, naive_derham_map
 from .grid_utils import stitch
 from .parallel import parmapreduce, parmap
 from .circumcenter cimport compute_circumcenter
@@ -45,14 +45,30 @@ class Skeleton(_Skeleton):
         elif attr in ['exterior_derivative', 'simplices', 'simplex_to_index', 'num_simplices']:
             self.compute_exterior()
             return getattr(self, attr)
-        elif attr == 'unstitched':
+        elif attr in 'unstitched':
             self.unstitched = list(parmapreduce(self.compute_unstitched, self.complex[self.dim + 1].unstitched, or_))
             return self.unstitched
+        elif attr == 'unstitched_to_index':
+            self.unstitched_to_index = dict([(us, i) for i, us in enumerate(self.unstitched)])
+            return self.unstitched_to_index
         elif attr == 'points':
             self.points = self.complex.vertices[asarray(self.unstitched)]
             return self.points
+        elif attr in ['_metrics', '_subdivisions']:
+            self._subdivisions, self._metrics = naive_derham_map(self.complex.metric, self.points, self.complex.subdivisions)
+            return getattr(self, attr)
         elif attr == 'metrics':
-            self.metrics = derham_map(self.complex.metric, self.points, self.complex.subdivisions)
+            self.metrics = self._metrics
+            if not self.dim:
+                return self.metrics
+
+            integration_factor = 0
+            for dim in range(self.dim + 1):
+                integration_factor += factorial(self.dim + 1) / (factorial(dim + 1) * factorial(self.dim - dim)) * self.complex[dim]._subdivisions * 0.5 ** (self.dim - dim)
+
+            self.metrics += asarray(parmap(self.metric_correction, self.unstitched))
+            self.metrics /= integration_factor
+
             return self.metrics
         elif attr == "primal_volumes":
             if self.dim:
@@ -139,26 +155,22 @@ cdef class _Skeleton(object):
     @profile(True)
     @boundscheck(False)
     @wraparound(False)
-    cpdef compute_sharp(self):
-        cdef unsigned char cdim = self.complex.complex_dimension + 1
-        cdef unsigned char edim = self.complex.embedding_dimension
-        cdef unsigned char dim = self.dim + 1
-        cdef unsigned int step =  edim ** self.dim
-        cdef ndarray[unsigned char, ndim=1] combo = empty((dim,), dtype="uint8")
-        cdef ndarray[unsigned char, ndim=2] combos = asarray(list(combinations(range(cdim), dim)), dtype="uint8")
-        cdef long unsigned int n, i
-        cdef complex c, element
-        cdef ndarray[unsigned char, ndim=1] subset_index = empty((self.dim,), dtype="uint8")
-        cdef list subset_indices = [(asarray([j for j in range(dim) if j != i0], dtype="uint8"), (-1) ** i0) for i0 in range(dim)]
-        cdef double normalize = len(combos) * len(subset_indices)
-        cdef ndarray[long unsigned int, ndim=2] simplices = self.complex[cdim - 1].simplices
-        cdef ndarray[long unsigned int, ndim=1] simplex = empty((cdim,), dtype="uint")
-        cdef ndarray[complex, ndim=3] all_barycentric_gradients = self.complex.barycentric_gradients
-        cdef ndarray[complex, ndim=2] barycentric_gradients = empty((cdim, edim), dtype="complex")
-        cdef ndarray[complex, ndim=2] vectors = empty((cdim, edim), dtype="complex")
-        cdef list rows = [], columns = [], data = []
- 
+    def compute_sharp(self):
+        cdim = self.complex.complex_dimension + 1
+        edim = self.complex.embedding_dimension
+        dim = self.dim + 1
+        step =  edim ** self.dim
+        combo = empty((dim,), dtype="uint8")
+        combos = asarray(list(combinations(range(cdim), dim)), dtype="uint8")
+        subset_indices = [(asarray([j for j in range(dim) if j != i0], dtype="uint8"), (-1) ** i0) for i0 in range(dim)]
+        normalize = len(combos) * len(subset_indices)
+        simplices = self.complex[cdim - 1].simplices
+        all_barycentric_gradients = self.complex.barycentric_gradients
+
         if not self.dim:
+            rows = []
+            columns = []
+            data = []
             for n in range(self.complex[cdim - 1].num_simplices):
                 for j in range(cdim):
                     rows.append(n)
@@ -166,9 +178,9 @@ cdef class _Skeleton(object):
                     data.append(1)
             self.sharp = coo_matrix((data, (rows, columns)), (self.complex[cdim - 1].num_simplices, self.num_simplices)).tocsr() / normalize
             return
-            
-        sharp = dok_matrix((self.complex[cdim - 1].num_simplices * step, self.num_simplices), dtype="complex")
-        for n in range(self.complex[cdim - 1].num_simplices):
+        
+        def compute_sharp(n):
+            sharp = lil_matrix((self.complex[cdim - 1].num_simplices * step, self.num_simplices), dtype="complex")
             simplex = simplices[n]
             barycentric_gradients = all_barycentric_gradients[n]
             n *= step
@@ -179,7 +191,9 @@ cdef class _Skeleton(object):
                     for j, element in enumerate(reduce(wedge, vectors[subset_index]).flat):
                         if element != 0:
                             sharp[n + j, i] += element * c
-        self.sharp = sharp.tocsr() / normalize
+            return sharp
+
+        self.sharp = parmapreduce(compute_sharp, range(self.complex[cdim - 1].num_simplices)).tocsr() / normalize
 
     @profile(True)
     @boundscheck(False)
@@ -209,3 +223,13 @@ cdef class _Skeleton(object):
         for i in range(len(simplex)):
             res.add(simplex[:i] + simplex[i + 1:])
         return res
+
+    def metric_correction(self, simplex):
+        correction = 0
+        for d in range(1, self.dim + 1):
+            dim = self.dim - d
+            next_skeleton = self.complex[dim]
+            if next_skeleton._subdivisions:
+                for combo in combinations(simplex, dim + 1):
+                    correction += next_skeleton._metrics[next_skeleton.unstitched_to_index[combo]] / 2 ** d
+        return correction
