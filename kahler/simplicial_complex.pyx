@@ -75,7 +75,7 @@ cdef class _SimplicialComplex(list):
     cpdef ndarray[complex, ndim=2] compute_barycentric_gradients(self, ndarray[complex, ndim=2] points, ndarray[complex, ndim=2] metric):
         cdef ndarray[complex, ndim=2] V = points[1:] - points[0]
         cdef ndarray[complex, ndim=2] grads = inv(V.dot(metric).dot(V.conj().T)).dot(V)
-        return vstack((atleast_2d(-grads.sum(axis=0)), grads))
+        return vstack((atleast_2d(-grads.sum(0)), grads))
 
     @profile(True)
     @boundscheck(False)

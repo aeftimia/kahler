@@ -148,24 +148,23 @@ cdef class _Skeleton(object):
         cdef ndarray[unsigned char, ndim=2] combos = asarray(list(combinations(range(cdim), dim)), dtype="uint8")
         cdef long unsigned int n, i
         cdef complex c, element
-        cdef double normalize = float(factorial(cdim)) / (factorial(self.dim) * factorial(cdim - dim))
         cdef ndarray[unsigned char, ndim=1] subset_index = empty((self.dim,), dtype="uint8")
-        cdef list subset_indices = [(asarray([j for j in range(dim) if j != i0], dtype="uint8"), (-1) ** i0 / normalize) for i0 in range(dim)]
+        cdef list subset_indices = [(asarray([j for j in range(dim) if j != i0], dtype="uint8"), (-1) ** i0) for i0 in range(dim)]
+        cdef double normalize = len(combos) * len(subset_indices)
         cdef ndarray[long unsigned int, ndim=2] simplices = self.complex[cdim - 1].simplices
         cdef ndarray[long unsigned int, ndim=1] simplex = empty((cdim,), dtype="uint")
         cdef ndarray[complex, ndim=3] all_barycentric_gradients = self.complex.barycentric_gradients
         cdef ndarray[complex, ndim=2] barycentric_gradients = empty((cdim, edim), dtype="complex")
         cdef ndarray[complex, ndim=2] vectors = empty((cdim, edim), dtype="complex")
         cdef list rows = [], columns = [], data = []
-        
+ 
         if not self.dim:
-            c = 1 / normalize
-            for n_index in range(self.complex[cdim - 1].num_simplices):
+            for n in range(self.complex[cdim - 1].num_simplices):
                 for j in range(cdim):
-                    rows.append(n_index)
-                    columns.append(self.simplex_to_index[frozenset(stitch((simplices[n_index, j],), self.complex.stitches))])
-                    data.append(c)
-            self.sharp = coo_matrix((data, (rows, columns)), (self.complex[cdim - 1].num_simplices, self.num_simplices)).tocsr()
+                    rows.append(n)
+                    columns.append(self.simplex_to_index[frozenset(stitch((simplices[n, j],), self.complex.stitches))])
+                    data.append(1)
+            self.sharp = coo_matrix((data, (rows, columns)), (self.complex[cdim - 1].num_simplices, self.num_simplices)).tocsr() / normalize
             return
             
         sharp = dok_matrix((self.complex[cdim - 1].num_simplices * step, self.num_simplices), dtype="complex")
@@ -180,7 +179,7 @@ cdef class _Skeleton(object):
                     for j, element in enumerate(reduce(wedge, vectors[subset_index]).flat):
                         if element != 0:
                             sharp[n + j, i] += element * c
-        self.sharp = sharp.tocsr()
+        self.sharp = sharp.tocsr() / normalize
 
     @profile(True)
     @boundscheck(False)
