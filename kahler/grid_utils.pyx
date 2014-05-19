@@ -1,4 +1,4 @@
-__all__ = ['stitch', 'embed', 'grid', 'pbc_stitches', 'grid_indices', 'symmetric_grid']
+__all__ = ['connect', 'stitch', 'embed', 'grid', 'pbc_stitches', 'grid_indices', 'symmetric_grid']
 
 from numpy import zeros, empty_like, empty, asarray
 from itertools import combinations, product
@@ -140,10 +140,10 @@ def pbc_stitches(grid_indices, shape, pbc):
                 stitches[stitch_vertex] = real_vertex
     return stitches
 
-def _stitch(index, stitches):
+def connect(index, stitches):
     while index in stitches:
         index = stitches[index]
     return index
 
 def stitch(simplex, dict stitches):
-    return asarray([_stitch(s, stitches) for s in simplex], dtype="uint")
+    return asarray([connect(s, stitches) for s in simplex], dtype="uint")
