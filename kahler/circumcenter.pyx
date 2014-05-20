@@ -12,7 +12,7 @@ cdef ndarray[complex, ndim=1] compute_circumcenter(ndarray[complex, ndim=2] poin
     cdef unsigned char i, k0 = points.shape[0] 
     cdef ndarray[complex, ndim=1] circumcenter = empty((points.shape[1],), dtype="complex"), ref = points[0]
     cdef ndarray[complex, ndim=2] points_conj = points.conj()
-    cdef complex ref2 = ref.conj().dot(metric).dot(ref)
+    cdef complex ref2 = points_conj[0].dot(metric).dot(ref)
     
     for i in range(1, k0):
         A.append(2 * points_conj.dot(metric).dot(points[i] - ref).real)
