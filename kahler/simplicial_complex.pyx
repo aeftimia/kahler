@@ -2,7 +2,7 @@ __all__ = ['SimplicialComplex']
 from numpy import asarray, arange, empty, identity, vstack, atleast_2d
 from itertools import product
 from scipy.sparse import csr_matrix
-from numpy.linalg import tensorsolve
+from scipy.linalg import inv
 
 from .skeleton import Skeleton
 from .parallel import parmap
@@ -19,9 +19,8 @@ class SimplicialComplex(_SimplicialComplex):
         simplices.sort()
 
         self.complex_dimension = simplices.shape[1] - 1
-        self.vertices = asarray(parmap(atleast_2d, vertices))
+        self.vertices = vertices
         self.embedding_dimension = vertices.shape[1]
-        self.representation_dimension = vertices.shape[2]
         self.stitches = stitches
         self.subdivisions = subdivisions
         
@@ -73,10 +72,10 @@ cdef class _SimplicialComplex(list):
     @profile(True)
     @boundscheck(False)
     @wraparound(False)
-    cpdef ndarray[complex, ndim=4] compute_barycentric_gradients(self, ndarray[complex, ndim=4] points, ndarray[complex, ndim=2] metric):
+    cpdef ndarray[complex, ndim=2] compute_barycentric_gradients(self, ndarray[complex, ndim=2] points, ndarray[complex, ndim=2] metric):
         cdef ndarray[complex, ndim=2] V = points[1:] - points[0]
-        cdef ndarray[complex, ndim=2] grads = tensorsolve(V.conj().transpose(3,2).dot(metric).dot(V.transpose(1,0)), V)
-        return vstack((-grads.sum(0), grads))
+        cdef ndarray[complex, ndim=2] grads = inv(V.dot(metric).dot(V.conj().T)).dot(V)
+        return vstack((atleast_2d(-grads.sum(0)), grads))
 
     @profile(True)
     @boundscheck(False)
