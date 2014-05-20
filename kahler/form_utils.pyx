@@ -3,7 +3,6 @@ __all__ = ['wedge', 'derham_map', 'parity', 'naive_derham_map']
 from numpy import arange, asarray, tensordot, zeros, linspace
 from itertools import product, combinations, permutations, groupby
 from .parallel import parmapreduce, parmap
-from functools import reduce
 
 from cython cimport boundscheck, wraparound, profile
 
