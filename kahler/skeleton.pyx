@@ -160,7 +160,6 @@ cdef class _Skeleton(object):
         edim = self.complex.embedding_dimension
         dim = self.dim + 1
         step =  edim ** self.dim
-        combo = empty((dim,), dtype="uint8")
         combos = asarray(list(combinations(range(cdim), dim)), dtype="uint8")
         subset_indices = [(asarray([j for j in range(dim) if j != i0], dtype="uint8"), (-1) ** i0) for i0 in range(dim)]
         normalize = len(combos) * len(subset_indices)
