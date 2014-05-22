@@ -83,13 +83,14 @@ cdef class _SimplicialComplex(list):
     cpdef list compute_dual_cells(self, tuple simplex, unsigned char p):
         cdef unsigned char i, k1 = len(simplex), k = k1 - 1
         cdef long unsigned int index
-        cdef list new_circumcenters = [], old_circumcenters, circumcenter = [self[k].circumcenters[simplex]]
+        cdef list new_circumcenters = [], old_circumcenters, old_points, new_points, circumcenter = [self[k].circumcenters[simplex]]
 
         if p == k:
-            return [(circumcenter, self[k].simplex_to_index[frozenset(stitch(simplex, self.stitches))])]
+            return [(circumcenter, circumcenter, self[k].simplex_to_index[frozenset(stitch(simplex, self.stitches))])]
 
         for i in range(k1):
-            for old_circumcenters, index in self.compute_dual_cells(simplex[:i] + simplex[i + 1:], p):
-                new_circumcenters.append((old_circumcenters + circumcenter, index))
+            new_points = [self.vertices[simplex[i]]]
+            for old_circumcenters, old_points, index in self.compute_dual_cells(simplex[:i] + simplex[i + 1:], p):
+                new_circumcenters.append((old_circumcenters + circumcenter, old_points + new_points, index))
             
         return new_circumcenters

@@ -200,20 +200,32 @@ cdef class _Skeleton(object):
     cpdef compute_primal_volumes(self, ndarray[complex, ndim=2] points, ndarray[complex, ndim=2] metric):
         cdef ndarray[complex, ndim=2] vecs = points[1:] - points[0]
         return sqrt(det(vecs.dot(metric).dot(vecs.conj().T)))
-
+        
     @profile(True)
     @boundscheck(False)
     @wraparound(False)
     cpdef compute_dual_volumes(self, tuple simplex, ndarray[complex, ndim=2] metric):
         cdef ndarray[complex, ndim=1] volumes = zeros((self.num_simplices,), dtype="complex")
-        cdef ndarray[complex, ndim=2] points = empty((self.dim + 1, self.complex.embedding_dimension), dtype="complex")
-        cdef ndarray[complex, ndim=2] vecs = empty((self.dim, self.complex.embedding_dimension), dtype="complex")
+        cdef ndarray[complex, ndim=2] primal_points = empty((self.dim + 1, self.complex.embedding_dimension), dtype="complex")
+        cdef ndarray[complex, ndim=2] primal_vecs = empty((self.dim, self.complex.embedding_dimension), dtype="complex")
+        cdef ndarray[complex, ndim=2] dual_points = empty((self.dim + 1, self.complex.embedding_dimension), dtype="complex")
+        cdef ndarray[complex, ndim=2] dual_vecs = empty((self.dim, self.complex.embedding_dimension), dtype="complex")
+        cdef ndarray[complex, ndim=2] dual_vecs_conj = empty((self.dim, self.complex.embedding_dimension), dtype="complex")
         cdef unsigned long int p_index
-        cdef list dual_cell
-        for dual_cell, p_index in self.complex.compute_dual_cells(simplex, self.dim):
-            points = asarray(dual_cell)
-            vecs = points[1:] - points[0]
-            volumes[p_index] = volumes[p_index] + sqrt(det(vecs.dot(metric).dot(vecs.conj().T)))
+        cdef complex s, vol2
+        cdef double abss
+        cdef list dual_cell, primal_cell
+        for dual_cell, primal_cell, p_index in self.complex.compute_dual_cells(simplex, self.dim):
+            dual_points = asarray(dual_cell)
+            dual_vecs = dual_points[1:] - dual_points[0]
+            dual_vecs_conj = dual_vecs.conj().T
+            primal_points = asarray(primal_cell)
+            primal_vecs = primal_points[1:] - primal_points[0]
+            vol2 = det(dual_vecs.dot(metric).dot(dual_vecs_conj))
+            s = det(primal_vecs.dot(metric).dot(dual_vecs_conj)).real * vol2 * det(primal_vecs.dot(metric).dot(primal_vecs.conj().T))
+            abss = abs(s)
+            if abss:
+                volumes[p_index] = volumes[p_index] + sqrt(vol2) * s / abss
         return volumes
 
     cpdef set compute_unstitched(self, tuple simplex):

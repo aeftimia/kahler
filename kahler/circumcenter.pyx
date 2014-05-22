@@ -10,7 +10,7 @@ from cython cimport boundscheck, wraparound, profile
 cdef ndarray[complex, ndim=1] compute_circumcenter(ndarray[complex, ndim=2] points, ndarray[complex, ndim=2] metric):
     cdef list A = [], b = []
     cdef unsigned char i, k0 = points.shape[0] 
-    cdef ndarray[complex, ndim=1] circumcenter = empty((points.shape[1],), dtype="complex"), ref = points[0]
+    cdef ndarray[complex, ndim=1] ref = points[0]
     cdef ndarray[complex, ndim=2] points_conj = points.conj()
     cdef complex ref2 = points_conj[0].dot(metric).dot(ref)
     
