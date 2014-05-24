@@ -214,12 +214,12 @@ cdef class _Skeleton(object):
         cdef unsigned long int p_index
         cdef complex s, vol2
         cdef double abss
-        cdef list dual_cell, primal_cell
-        for dual_cell, primal_cell, p_index in self.complex.compute_dual_cells(simplex, self.dim):
-            dual_points = asarray(dual_cell)
+        cdef list circumcentric_subdivision, reference_simplex
+        for circumcentric_subdivision, reference_simplex, p_index in self.complex.compute_dual_cells(simplex, self.dim):
+            dual_points = asarray(circumcentric_subdivision)
             dual_vecs = dual_points[1:] - dual_points[0]
             dual_vecs_conj = dual_vecs.conj().T
-            primal_points = asarray(primal_cell)
+            primal_points = asarray(reference_simplex)
             primal_vecs = primal_points[1:] - primal_points[0]
             vol2 = det(dual_vecs.dot(metric).dot(dual_vecs_conj))
             s = det(primal_vecs.dot(metric).dot(dual_vecs_conj)).real * vol2 * det(primal_vecs.dot(metric).dot(primal_vecs.conj().T))
