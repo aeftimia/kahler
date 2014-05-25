@@ -1,6 +1,8 @@
 __all__ = ['connect', 'stitch', 'embed', 'grid', 'pbc_stitches', 'grid_indices', 'symmetric_grid', 'random_mesh']
 
-from numpy import zeros, empty_like, empty, asarray
+from numpy import zeros, empty_like, empty, asarray, vstack, delete
+from numpy.random import rand
+from scipy.spatial import Delaunay
 from itertools import combinations, product
 from functools import partial
 
@@ -57,7 +59,7 @@ def random_mesh(N, dim, pbc=[]):
     stitches = {}
     for pb in pbc:
         for index1, vertex1 in enumerate(boundary):
-            if vertex1[pb] == 0 and not index1 in ghosts:
+            if vertex1[pb] == 0 and not index1 in stitches:
                 other_coordinates = delete(vertex1, pb, 0)
                 for index2, vertex2 in enumerate(boundary):
                     if vertex2[pb] == 1 and (other_coordinates == delete(vertex2, pb, 0)).all():
@@ -74,7 +76,7 @@ def random_mesh(N, dim, pbc=[]):
     vertices = vstack((boundary, vertices))
     simplices = Delaunay(vertices).simplices.astype("uint")
     
-    return vertices, simplices, stitches
+    return vertices.astype("complex"), simplices, stitches
 
 @profile(True)
 @boundscheck(False)

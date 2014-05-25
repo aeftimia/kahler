@@ -19,7 +19,7 @@ class SimplicialComplex(_SimplicialComplex):
         simplices.sort()
 
         self.complex_dimension = simplices.shape[1] - 1
-        self.vertices = vertices
+        self.vertices = vertices.astype("complex")
         self.embedding_dimension = vertices.shape[1]
         self.stitches = stitches
         self.subdivisions = subdivisions
