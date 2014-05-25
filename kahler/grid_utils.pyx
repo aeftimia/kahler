@@ -1,4 +1,4 @@
-__all__ = ['connect', 'stitch', 'embed', 'grid', 'pbc_stitches', 'grid_indices', 'symmetric_grid']
+__all__ = ['connect', 'stitch', 'embed', 'grid', 'pbc_stitches', 'grid_indices', 'symmetric_grid', 'random_mesh']
 
 from numpy import zeros, empty_like, empty, asarray
 from itertools import combinations, product
@@ -7,6 +7,74 @@ from functools import partial
 from .parallel import parmap
 
 from cython cimport boundscheck, wraparound, profile
+
+@profile(True)
+@boundscheck(False)
+@wraparound(False)
+def random_mesh(N, dim, pbc=[]):
+    n = N ** (1. / dim)
+    too_close = 0.5 / n
+    n = int(n)
+    too_close2 = too_close ** 2
+
+    def rescale(vertex):
+        vertex *= 1 - too_close
+        vertex += too_close / 2
+        return vertex
+
+    boundary = []
+    for i in range(1, dim + 1):
+        vertices = rescale(rand(n, dim))
+        for index in range(n):
+            vertex = vertices[index]
+            while (abs(vertices[:index] - vertex) < too_close).any():
+                vertex = rescale(rand(dim))
+            vertices[index] = vertex
+
+        new_vertices = []
+        for boundary_indices in combinations(range(dim), i):
+            boundary_indices = list(boundary_indices)
+            for boundary_combo in product(*[[0, 1]] * i):
+                boundary_vertices = vertices.copy()
+                boundary_vertices[:, boundary_indices] = boundary_combo
+                for bv in boundary_vertices:
+                    new_vertices.append(bv)
+        boundary.extend(new_vertices)
+        
+    boudnary = asarray(boundary)
+
+    def closeness_test(vertices1, vertices2):
+        btest = False
+        for vertex1 in vertices1:
+            for vertex2 in vertices2:
+                btest = ((vertex1 - vertex2) ** 2).sum() < too_close2
+                if btest:
+                    break
+            if btest:
+                break
+        return btest
+
+    stitches = {}
+    for pb in pbc:
+        for index1, vertex1 in enumerate(boundary):
+            if vertex1[pb] == 0 and not index1 in ghosts:
+                other_coordinates = delete(vertex1, pb, 0)
+                for index2, vertex2 in enumerate(boundary):
+                    if vertex2[pb] == 1 and (other_coordinates == delete(vertex2, pb, 0)).all():
+                        stitches[index1] = index2
+                        break
+        
+    vertices = rescale(rand(N, dim))
+    for index in range(N):
+        vertex = vertices[index]
+        while closeness_test([vertex], vertices[:index]):
+            vertex = rescale(rand(dim))
+        vertices[index] = vertex
+    
+    vertices = vstack((boundary, vertices))
+    simplices = Delaunay(vertices).simplices.astype("uint")
+    
+    return vertices, simplices, stitches
 
 @profile(True)
 @boundscheck(False)
