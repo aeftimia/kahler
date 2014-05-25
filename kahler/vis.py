@@ -1,6 +1,6 @@
 __all__ = ['scalar_field2d', 'vector_field2d']
 
-from numpy import atleast_2d, hstack, asarray, zeros, mgrid, complex, nanmin, nanmax
+from numpy import atleast_2d, hstack, asarray, zeros, mgrid, complex, nanmin, nanmax, sqrt
 from scipy.interpolate import griddata
 
 def scalar_field2d(barycenters, scalar_field, N, figure=None):
