@@ -199,7 +199,7 @@ cdef class _Skeleton(object):
     @wraparound(False)
     cpdef compute_primal_volumes(self, ndarray[complex, ndim=2] points, ndarray[complex, ndim=2] metric):
         cdef ndarray[complex, ndim=2] vecs = points[1:] - points[0]
-        return sqrt(det(vecs.dot(metric).dot(vecs.conj().T)))
+        return sqrt(abs(det(vecs.dot(metric).dot(vecs.conj().T)).real))
         
     @profile(True)
     @boundscheck(False)
@@ -212,7 +212,7 @@ cdef class _Skeleton(object):
         cdef ndarray[complex, ndim=2] dual_vecs = empty((self.dim, self.complex.embedding_dimension), dtype="complex")
         cdef ndarray[complex, ndim=2] dual_vecs_conj = empty((self.dim, self.complex.embedding_dimension), dtype="complex")
         cdef unsigned long int p_index
-        cdef complex vol2
+        cdef double vol2
         cdef char s
         cdef list circumcentric_subdivision, reference_simplex
         for circumcentric_subdivision, reference_simplex, p_index in self.complex.compute_dual_cells(simplex, self.dim):
@@ -221,10 +221,9 @@ cdef class _Skeleton(object):
             dual_vecs_conj = dual_vecs.conj().T
             primal_points = asarray(reference_simplex)
             primal_vecs = primal_points[1:] - primal_points[0]
-            vol2 = det(dual_vecs.dot(metric).dot(dual_vecs_conj))
-            s = sign((det(primal_vecs.dot(metric).dot(dual_vecs_conj)) * vol2 * det(primal_vecs.dot(metric).dot(primal_vecs.conj().T))).real)
-            if s:
-                volumes[p_index] = volumes[p_index] + sqrt(vol2) * s
+            vol2 = det(dual_vecs.dot(metric).dot(dual_vecs_conj)).real
+            s = sign(det(primal_vecs.dot(metric).dot(dual_vecs_conj)).real * det(primal_vecs.dot(metric).dot(primal_vecs.conj().T)).real * vol2)
+            volumes[p_index] = volumes[p_index] + sqrt(abs(vol2)) * s
         return volumes
 
     cpdef set compute_unstitched(self, tuple simplex):
