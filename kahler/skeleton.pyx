@@ -1,6 +1,6 @@
 __all__ = ['Skeleton']
 
-from numpy import asarray, zeros, ones, empty, sqrt, arange, int8, sqrt
+from numpy import asarray, zeros, ones, empty, sqrt, arange, int8, sqrt, sign
 from scipy.sparse import csr_matrix, dia_matrix, lil_matrix, coo_matrix
 from scipy.linalg._flinalg import zdet_r
 from scipy.misc import factorial
@@ -212,8 +212,8 @@ cdef class _Skeleton(object):
         cdef ndarray[complex, ndim=2] dual_vecs = empty((self.dim, self.complex.embedding_dimension), dtype="complex")
         cdef ndarray[complex, ndim=2] dual_vecs_conj = empty((self.dim, self.complex.embedding_dimension), dtype="complex")
         cdef unsigned long int p_index
-        cdef complex s, vol2
-        cdef double abss
+        cdef complex vol2
+        cdef double s
         cdef list circumcentric_subdivision, reference_simplex
         for circumcentric_subdivision, reference_simplex, p_index in self.complex.compute_dual_cells(simplex, self.dim):
             dual_points = asarray(circumcentric_subdivision)
@@ -222,10 +222,9 @@ cdef class _Skeleton(object):
             primal_points = asarray(reference_simplex)
             primal_vecs = primal_points[1:] - primal_points[0]
             vol2 = det(dual_vecs.dot(metric).dot(dual_vecs_conj))
-            s = det(primal_vecs.dot(metric).dot(dual_vecs_conj)).real * vol2 * det(primal_vecs.dot(metric).dot(primal_vecs.conj().T))
-            abss = abs(s)
-            if abss:
-                volumes[p_index] = volumes[p_index] + sqrt(vol2) * s / abss
+            s = sign((det(primal_vecs.dot(metric).dot(dual_vecs_conj)) * vol2 * det(primal_vecs.dot(metric).dot(primal_vecs.conj().T))).real)
+            if s:
+                volumes[p_index] = volumes[p_index] + sqrt(vol2) * s
         return volumes
 
     cpdef set compute_unstitched(self, tuple simplex):
