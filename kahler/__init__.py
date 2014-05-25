@@ -1,3 +1,4 @@
+from vis import *
 from parallel import *
 from grid_utils import *
 from form_utils import *

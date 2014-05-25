@@ -244,3 +244,6 @@ cdef class _Skeleton(object):
                 for combo in combinations(simplex, dim + 1):
                     correction += next_skeleton._metrics[next_skeleton.unstitched_to_index[combo]] / 2 ** d
         return correction
+        
+    cpdef sharpen(self, form):
+        return self.sharp.dot(form).reshape((self.complex[-1].num_simplices,) + (self.complex.embedding_dimension,) * self.dim)
