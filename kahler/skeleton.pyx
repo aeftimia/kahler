@@ -213,7 +213,7 @@ cdef class _Skeleton(object):
         cdef ndarray[complex, ndim=2] dual_vecs_conj = empty((self.dim, self.complex.embedding_dimension), dtype="complex")
         cdef unsigned long int p_index
         cdef complex vol2
-        cdef double s
+        cdef char s
         cdef list circumcentric_subdivision, reference_simplex
         for circumcentric_subdivision, reference_simplex, p_index in self.complex.compute_dual_cells(simplex, self.dim):
             dual_points = asarray(circumcentric_subdivision)
