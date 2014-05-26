@@ -2,7 +2,7 @@ __all__ = ['SimplicialComplex']
 from numpy import asarray, arange, empty, identity, vstack, atleast_2d
 from itertools import product
 from scipy.sparse import csr_matrix
-from scipy.linalg import inv
+from scipy.linalg import solve
 
 from .skeleton import Skeleton
 from .parallel import parmap
@@ -73,9 +73,9 @@ cdef class _SimplicialComplex(list):
     @boundscheck(False)
     @wraparound(False)
     cpdef ndarray[complex, ndim=2] compute_barycentric_gradients(self, ndarray[complex, ndim=2] points, ndarray[complex, ndim=2] metric):
-        cdef ndarray[complex, ndim=2] V = points[1:] - points[0]
-        cdef ndarray[complex, ndim=2] grads = inv(V.dot(metric).dot(V.conj().T)).dot(V)
-        return vstack((atleast_2d(-grads.sum(0)), grads))
+        cdef ndarray[complex, ndim=2] V = points[1:] - points[0], V1 = metric.dot(V.conj().T).T
+        solve(V.dot(metric).dot(V1.T), V1, overwrite_a=True, overwrite_b=True, check_finite=False)
+        return vstack((atleast_2d(-V1.sum(0)), V1))
 
     @profile(True)
     @boundscheck(False)
