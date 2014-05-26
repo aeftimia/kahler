@@ -197,15 +197,15 @@ cdef class _Skeleton(object):
     @profile(True)
     @boundscheck(False)
     @wraparound(False)
-    cpdef complex compute_primal_volumes(self, ndarray[complex, ndim=2] points, ndarray[complex, ndim=2] metric):
+    cpdef double compute_primal_volumes(self, ndarray[complex, ndim=2] points, ndarray[complex, ndim=2] metric):
         cdef ndarray[complex, ndim=2] vecs = points[1:] - points[0]
         return sqrt(abs(det(vecs.dot(metric).dot(vecs.conj().T)).real))
         
     @profile(True)
     @boundscheck(False)
     @wraparound(False)
-    cpdef ndarray[complex, ndim=1] compute_dual_volumes(self, tuple simplex, ndarray[complex, ndim=2] metric):
-        cdef ndarray[complex, ndim=1] volumes = zeros(self.num_simplices,dtype="complex")
+    cpdef ndarray[double, ndim=1] compute_dual_volumes(self, tuple simplex, ndarray[complex, ndim=2] metric):
+        cdef ndarray[double, ndim=1] volumes = zeros(self.num_simplices)
         cdef ndarray[complex, ndim=2] primal_points = empty((self.dim + 1, self.complex.embedding_dimension), dtype="complex")
         cdef ndarray[complex, ndim=2] primal_vecs = empty((self.dim, self.complex.embedding_dimension), dtype="complex")
         cdef ndarray[complex, ndim=2] dual_points = empty((self.dim + 1, self.complex.embedding_dimension), dtype="complex")
@@ -221,7 +221,7 @@ cdef class _Skeleton(object):
             primal_points = asarray(reference_simplex)
             primal_vecs = primal_points[1:] - primal_points[0]
             s = sign(det(primal_vecs.dot(metric).dot(dual_vecs_conj)).real)
-            volumes[p_index] = volumes[p_index] + sqrt(abs(det(dual_vecs.dot(metric).dot(dual_vecs_conj)).real)) * s
+            volumes[p_index] += sqrt(abs(det(dual_vecs.dot(metric).dot(dual_vecs_conj)).real)) * s
         return volumes
 
     cpdef set compute_unstitched(self, tuple simplex):
