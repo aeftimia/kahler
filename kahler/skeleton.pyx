@@ -78,7 +78,7 @@ class Skeleton(_Skeleton):
                     self.primal_volumes[index] = volume
                 self.primal_volumes /= factorial(self.dim)
             else:
-                self.primal_volumes = ones(self.num_simplices, dtype="complex")
+                self.primal_volumes = ones(self.num_simplices)
             return self.primal_volumes
         elif attr == "circumcenters":
             self.circumcenters = dict(parmap(lambda stuff: (stuff[0], compute_circumcenter(stuff[1], stuff[2])), zip(self.unstitched, self.points, self.metrics)))
