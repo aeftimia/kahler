@@ -73,7 +73,7 @@ class Skeleton(_Skeleton):
         elif attr == "primal_volumes":
             if self.dim:
                 primal_volumes = parmap(lambda stuff: (self.simplex_to_index[frozenset(stitch(stuff[0], self.complex.stitches))], self.compute_primal_volumes(stuff[1], stuff[2])), zip(self.unstitched, self.points, self.metrics))
-                self.primal_volumes = empty(self.num_simplices, dtype="complex")
+                self.primal_volumes = empty(self.num_simplices)
                 for index, volume in primal_volumes:
                     self.primal_volumes[index] = volume
                 self.primal_volumes /= factorial(self.dim)
