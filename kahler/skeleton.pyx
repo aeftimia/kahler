@@ -73,7 +73,7 @@ class Skeleton(_Skeleton):
         elif attr == "primal_volumes":
             if self.dim:
                 primal_volumes = parmap(lambda stuff: (self.simplex_to_index[frozenset(stitch(stuff[0], self.complex.stitches))], self.compute_primal_volumes(stuff[1], stuff[2])), zip(self.unstitched, self.points, self.metrics))
-                self.primal_volumes = empty(self.num_simplices, dtype="complex")
+                self.primal_volumes = empty(self.num_simplices)
                 for index, volume in primal_volumes:
                     self.primal_volumes[index] = volume
                 self.primal_volumes /= factorial(self.dim)
@@ -197,15 +197,15 @@ cdef class _Skeleton(object):
     @profile(True)
     @boundscheck(False)
     @wraparound(False)
-    cpdef complex compute_primal_volumes(self, ndarray[complex, ndim=2] points, ndarray[complex, ndim=2] metric):
+    cpdef double compute_primal_volumes(self, ndarray[complex, ndim=2] points, ndarray[complex, ndim=2] metric):
         cdef ndarray[complex, ndim=2] vecs = points[1:] - points[0]
-        return sqrt(complex(det(vecs.dot(metric).dot(vecs.conj().T)).real))
+        return sqrt(det(vecs.dot(metric).dot(vecs.conj().T)).real)
         
     @profile(True)
     @boundscheck(False)
     @wraparound(False)
-    cpdef ndarray[complex, ndim=1] compute_dual_volumes(self, tuple simplex, ndarray[complex, ndim=2] metric):
-        cdef ndarray[complex, ndim=1] volumes = zeros(self.num_simplices, dtype="complex")
+    cpdef ndarray[double, ndim=1] compute_dual_volumes(self, tuple simplex, ndarray[complex, ndim=2] metric):
+        cdef ndarray[double, ndim=1] volumes = zeros(self.num_simplices)
         cdef ndarray[complex, ndim=2] primal_points = empty((self.dim + 1, self.complex.embedding_dimension), dtype="complex")
         cdef ndarray[complex, ndim=2] primal_vecs = empty((self.dim, self.complex.embedding_dimension), dtype="complex")
         cdef ndarray[complex, ndim=2] dual_points = empty((self.dim + 1, self.complex.embedding_dimension), dtype="complex")
@@ -217,11 +217,11 @@ cdef class _Skeleton(object):
         for circumcentric_subdivision, reference_simplex, p_index in self.complex.compute_dual_cells(simplex, self.dim):
             dual_points = asarray(circumcentric_subdivision)
             dual_vecs = dual_points[1:] - dual_points[0]
-            dual_vecs_conj = metric.dot(dual_vecs.conj().T)
+            dual_vecs_conj = dual_vecs.conj().T
             primal_points = asarray(reference_simplex)
             primal_vecs = primal_points[1:] - primal_points[0]
-            s = sign(det(primal_vecs.dot(dual_vecs_conj)).real * det(primal_vecs.dot(metric).dot(primal_vecs.conj().T)).real)
-            volumes[p_index] = volumes[p_index] + sqrt(complex(det(dual_vecs.dot(dual_vecs_conj)).real)) * s
+            s = sign(det(primal_vecs.dot(metric).dot(dual_vecs_conj)).real)
+            volumes[p_index] += sqrt(det(dual_vecs.dot(metric).dot(dual_vecs_conj)).real) * s
         return volumes
 
     cpdef set compute_unstitched(self, tuple simplex):
