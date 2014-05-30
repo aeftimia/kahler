@@ -100,7 +100,7 @@ class Skeleton(_Skeleton):
             return self.inverse_star
         elif attr == "codifferential":
             if self.dim:
-                self.codifferential = (-1) ** self.dim * self.complex[self.dim - 1].inverse_star.dot(self.complex[self.dim - 1].exterior_derivative.T).dot(self.star)
+                self.codifferential = self.complex[self.dim - 1].inverse_star.dot(self.complex[self.dim - 1].exterior_derivative.T).dot(self.star)
             else:
                 self.codifferential = csr_matrix((1, self.num_simplices))
             return self.codifferential
