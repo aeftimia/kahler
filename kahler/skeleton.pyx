@@ -2,7 +2,6 @@ __all__ = ['Skeleton']
 
 from numpy import asarray, zeros, ones, empty, sqrt, arange, int8, sign
 from scipy.sparse import csr_matrix, dia_matrix, lil_matrix, coo_matrix
-from scipy.linalg._flinalg import zdet_r
 from scipy.misc import factorial
 from itertools import combinations
 from functools import reduce
@@ -12,15 +11,10 @@ from .form_utils import wedge, naive_derham_map
 from .grid_utils import stitch
 from .parallel import parmapreduce, parmap
 from .circumcenter cimport compute_circumcenter
+from .linalg cimport det
 
 from cython cimport boundscheck, wraparound, profile
 from numpy cimport complex, ndarray
-
-@profile(True)
-@boundscheck(False)
-@wraparound(False)
-cdef complex det(ndarray[complex, ndim=2] m):
-    return zdet_r(m, True)[0]
 
 class Skeleton(_Skeleton):
     """caches the result of costly operations"""

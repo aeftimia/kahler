@@ -7,6 +7,7 @@ from scipy.linalg import solve
 from .skeleton import Skeleton
 from .parallel import parmap
 from .grid_utils import stitch
+from .barycentric cimport compute_barycentric_gradients
 
 from cython cimport boundscheck, wraparound, profile
 from numpy cimport complex, ndarray   
@@ -59,7 +60,7 @@ class SimplicialComplex(_SimplicialComplex):
     def __getattr__(self, attr):
         if attr == "barycentric_gradients":
             barycentric_gradients = parmap(lambda stuff: (self[-1].simplex_to_index[frozenset(stitch(stuff[0], self.stitches))], \
-                                            self.compute_barycentric_gradients(stuff[1], stuff[2])), \
+                                            compute_barycentric_gradients(stuff[1], stuff[2])), \
                                             zip(self[-1].unstitched, self[-1].points, self[-1].metrics))
             self.barycentric_gradients = empty((self[-1].num_simplices, self.complex_dimension + 1, self.embedding_dimension), dtype="complex")
             for index, bc in barycentric_gradients:
@@ -69,14 +70,6 @@ class SimplicialComplex(_SimplicialComplex):
             raise AttributeError(attr + " not found")
 
 cdef class _SimplicialComplex(list):
-    @profile(True)
-    @boundscheck(False)
-    @wraparound(False)
-    cpdef ndarray[complex, ndim=2] compute_barycentric_gradients(self, ndarray[complex, ndim=2] points, ndarray[complex, ndim=2] metric):
-        cdef ndarray[complex, ndim=2] V = points[1:] - points[0], V1 = metric.dot(V.conj().T).T
-        solve(V.dot(metric).dot(V1.T), V1, overwrite_a=True, overwrite_b=True, check_finite=False)
-        return vstack((atleast_2d(-V1.sum(0)), V1))
-
     @profile(True)
     @boundscheck(False)
     @wraparound(False)

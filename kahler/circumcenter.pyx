@@ -18,6 +18,6 @@ cdef ndarray[complex, ndim=1] compute_circumcenter(ndarray[complex, ndim=2] poin
         A.append(2 * points_conj.dot(metric).dot(points[i] - ref).real)
         b.append(points_conj[i].dot(metric).dot(points[i]).real - ref2)
     A.append(ones(k0))
-    b.append(1)
+    b.append(1.)
 
     return solve(A, b, overwrite_a=True, overwrite_b=True, check_finite=False).dot(points)
