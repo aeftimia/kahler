@@ -244,6 +244,6 @@ from matplotlib.pylab import show
 barycenters = sc[2].points.mean(1)
 vector_field = sc[1].sharpen(form)
 
-kahler.scalar_field2d(barycenters, vector_field, 1000)
+kahler.vector_field2d(barycenters, vector_field, 20)
 show()
 ```
