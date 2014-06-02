@@ -9,7 +9,7 @@ Kahler provides three ways of triangulating an N dimensional cube:
 * Asymmetric Grid
 * Random Mesh
 
-##Symmetric and Asymmetric Grids:
+##Symmetric and Asymmetric Grids
 
 The symmetric and asymmetric grid results in a mesh documented at http://arxiv.org/abs/1405.7879.
 
@@ -40,7 +40,7 @@ asymmetric_grid_simplices = kahler.asymmetric_grid(grid_indices)
 Both functions return a 2D numpy array of simplices. Each row is a list of vertex indices that forms a simplex.
 
 
-##Random Meshes:
+##Random Meshes
 
 Random meshes are created without grid indices.
 Instead, kahler's random_mesh function takes the number of points on the interior of the mesh and the dimension of the mesh as arguements.
@@ -56,7 +56,7 @@ The ith row gives the coordinates of the ith vertex. In the above usage, stitche
 random_mesh can take a third argument for imposing periodic boundary conditions.
 This will result in a nonempty dictionary and will be discussed in the next section.
 
-#Customizing Topology:
+#Customizing Topology
 
 Given a triangulated N dimensional cube, it possible to create any desired topology by gluing or "stitching" vertices together.
 When using kahler, these "stitches" are stored as a dictionary that maps vertex indices to the corresponding vertex indices they should be stitched to.
@@ -138,7 +138,7 @@ For a customized topology, use
 sc = kahler.SimplicialComplex(simplices, vertices, stitches=stitches)
 ```
 
-#Specifying a Metric:
+#Specifying a Metric
 
 By default, the Euclidian metric is used.
 The metric is a function that takes the coordinates of a point and returns the cooresponding Hermitian metric at that point in the form of a complex 2D numpy array.
@@ -206,7 +206,7 @@ L_vector = sc[1].laplace_beltrami
 
 And so on.
 
-#Sharpening a differential form
+#Sharpening a Differential Form
 
 Each p-skeleton has a method called sharpen that can be used to turn a differential p-form into a antisymmetric p-rank tensor field.
 Given a p-form (stored as a one dimensional numpy array of coefficients of p-simplices), one can use sharpen as follows:
