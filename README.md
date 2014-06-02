@@ -83,7 +83,7 @@ The next step is choosing a coordinate system to embed the vertices. The embed f
 **Example**
 ```python
 from numpy import linspace
-coordinates = [[linspace(0,1,s) for s in shape]]
+coordinates = [linspace(0,1,s) for s in shape]
 vertices = kahler.embed(grid_indices, coordinates)
 ```
 
