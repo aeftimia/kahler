@@ -87,7 +87,7 @@ coordinates = [linspace(0,1,s) for s in shape]
 vertices = kahler.embed(grid_indices, coordinates)
 ```
 
-Here, coordinates are the coordinates of each N-1 dimensional hyperplane that subdivides your N dimensional cubic space. For example, say
+Here, coordinates are the coordinates of each N-1 dimensional hyperplane that discretizes your N dimensional cubic space. For example, say
 
 ```python
 shape=[2, 3, 2]
