@@ -21,7 +21,7 @@ This might be mapped to vertex 1, and so on.
 
 Use kahler.grid_indices([M1, M2,..., MN]) to create a dictionary of grid indices for an M1xM2x...xMN grid.
 
-*Example*
+**Example**
 ```python
 import kahler
 shape = [4,5,3]
@@ -31,10 +31,11 @@ grid_indices = kahler.grid_indices(shape)
 The space can now be divided into simplices using the symmetric or asymmetric grid functions (kahler.symmetric_grid and kahler.grid respectively).
 In the above example, a 4x5x3 grid is used.
 
-Example
-
+**Example**
+```python
 symmetric_grid_simplices = kahler.grid(grid_indices)
 asymmetric_grid_simplices = kahler.asymmetric_grid(grid_indices)
+```
 
 Both functions return a 2D numpy array of simplices. Each row is a list of vertex indices that forms a simplex.
 
@@ -44,7 +45,7 @@ Both functions return a 2D numpy array of simplices. Each row is a list of verte
 Random meshes are created without grid indices.
 Instead, kahler's random_mesh function takes the number of points on the interior of the mesh and the dimension of the mesh as arguements.
 
-*Example*
+**Example**
 ```python
 simplices, vertices, stitches = kahler.random_mesh(150, 3)
 ```
@@ -62,7 +63,7 @@ When using kahler, these "stitches" are stored as a dictionary that maps vertex 
 To create a torus for periodic boundary conditions, points on opposite sides of the grid are stitched together.
 Kahler comes with a function called pbc_stitches that creates the stitches necessary to impose periodic boundary conditions in any combination of directions.
 
-*Example*
+**Example**
 ```python
 stitches = kahler.pbc_stitches(grid_indices, shape, [0, 2])
 ```
@@ -70,7 +71,7 @@ stitches = kahler.pbc_stitches(grid_indices, shape, [0, 2])
 The third argument is a list of (zero indexed) directions that should be periodic.
 In the above example, the first and third directions are to be periodic. For random meshes, this list of directions is specified as a third argument.
 
-*Example*
+**Example**
 ```python
 simplices, vertices, stitches = kahler.random_mesh(150, 3, [0, 2])
 ```
@@ -79,7 +80,7 @@ simplices, vertices, stitches = kahler.random_mesh(150, 3, [0, 2])
 
 The next step is choosing a coordinate system to embed the vertices. The embed function is used to create a list of coordinates from grid indices.
 
-*Example*
+**Example**
 ```python
 from numpy import linspace
 coordinates = [[linspace(0,1,s) for s in shape]]
@@ -143,7 +144,7 @@ By default, the Euclidian metric is used.
 The metric is a function that takes the coordinates of a point and returns the cooresponding Hermitian metric at that point in the form of a complex 2D numpy array.
 The points and the resulting matrix should both be complex numpy arrays.
 
-*Example* (the metric for polar coordinates)
+**Example** (the metric for polar coordinates)
 
 ```python
 from numpy import asarray
@@ -221,7 +222,7 @@ Each tensor in the tensor field is located at the barycenter of a corresponding 
 Kahler comes with two tools to visualize 2D fields. Tools for animating 2D fields to visualize 3D ones may come soon.
 To visualize scalar fields, use the scalar_field2d function. This returns a matplotlib image of the field interpolated.
 
-*Example*
+**Example**
 ```python
 from matplotlib.pylab import show 
 
@@ -236,7 +237,7 @@ This will interpolate the scalar field over a 1000x1000 grid.
 
 Similarly, one can use vector_field2d to visualize a vector field.
 
-*Example*
+**Example**
 ```python
 from matplotlib.pylab import show 
 
