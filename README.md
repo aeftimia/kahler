@@ -153,7 +153,7 @@ def g(pt):
     m = asarray([
                  [1, 0],
                  [0, r ** 2]
-                 ], dtype="complex")
+                ], dtype="complex")
     return m
     
 sc = SimplicialComplex(simplices, vertices, stitches=stitches, metric=g)
