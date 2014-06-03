@@ -124,13 +124,13 @@ Say there is more interesting phenomina near y=1. Then one might choose to use a
 ```
 
 ##Random Meshes
-Random meshes automatically embed vertices on the unit N-cube. The coordinates of these vertices are returned as seen below:
+Random meshes automatically embed vertices on the unit N-cube. The coordinates of these vertices are returned as shown below:
 
 ```python
 simplices, vertices, stitches = kahler.random_mesh(150, 3, [0,2])
 ```
 
-#Creating a Simplicial Complex:
+#Creating a Simplicial Complex
 
 Simplicial complexes are created with the SimplicialComplex class. It can be initialized as follows:
 
