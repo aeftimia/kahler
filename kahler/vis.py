@@ -15,7 +15,7 @@ def scalar_field2d(barycenters, scalar_field, N, figure=None):
     from matplotlib import pylab
     if figure == None:
         fig = pylab.figure(figsize=(10,10))
-    return pylab.imshow(z1, vmin=vmin,vmax=vmax, extent=[xmin, xmax, ymin, ymax], figure=fig)
+    return pylab.imshow(z1, vmin=vmin,vmax=vmax, extent=[xmin, xmax, ymin, ymax], figure=figure)
     
 def vector_field2d(barycenters, vector_field, N, figure=None):
     dn = 1. / N
@@ -32,5 +32,5 @@ def vector_field2d(barycenters, vector_field, N, figure=None):
     VX, VY = z1
     if figure == None:
         fig = pylab.figure(figsize=(10,10))
-    pylab.quiver(X, Y, VX, VY, sqrt(VX ** 2 + VY ** 2), scale=1, figure=fig)
+    pylab.quiver(X, Y, VX, VY, sqrt(VX ** 2 + VY ** 2), scale=1, figure=figure)
     pylab.axis([xmin, xmax, ymin, ymax])
