@@ -47,7 +47,7 @@ Instead, kahler's random_mesh function takes the number of points on the interio
 
 **Example**
 ```python
-vertices, simplices, stitches = kahler.random_mesh(150, 3)
+simplices, vertices, stitches = kahler.random_mesh(150, 3)
 ```
 
 In the above example, the mesh will be 3 dimensional and have have 150 points on its interior.
@@ -73,7 +73,7 @@ In the above example, the first and third directions are to be periodic. For ran
 
 **Example**
 ```python
-vertices, simplices, stitches = kahler.random_mesh(150, 3, [0, 2])
+simplices, vertices, stitches = kahler.random_mesh(150, 3, [0, 2])
 ```
 
 #Embedding the Vertices
@@ -127,7 +127,7 @@ Say there is more interesting phenomina near y=1. Then one might choose to use a
 Random meshes automatically embed vertices on the unit N-cube. The coordinates of these vertices are returned as shown below:
 
 ```python
-vertices, simplices, stitches = kahler.random_mesh(150, 3, [0,2])
+simplices, vertices, stitches = kahler.random_mesh(150, 3, [0,2])
 ```
 
 #Creating a Simplicial Complex
@@ -135,13 +135,13 @@ vertices, simplices, stitches = kahler.random_mesh(150, 3, [0,2])
 Simplicial complexes are created with the SimplicialComplex class. It can be initialized as follows:
 
 ```python
-sc = kahler.SimplicialComplex(vertices, simplices)
+sc = kahler.SimplicialComplex(simplices, vertices)
 ```
 
 For a customized topology, use
 
 ```python
-sc = kahler.SimplicialComplex(vertices, simplices, stitches=stitches)
+sc = kahler.SimplicialComplex(simplices, vertices, stitches=stitches)
 ```
 
 #Specifying a Metric
@@ -162,7 +162,7 @@ def g(pt):
                 ], dtype="complex")
     return m
     
-sc = SimplicialComplex(vertices, simplices, stitches=stitches, metric=g)
+sc = SimplicialComplex(simplices, vertices, stitches=stitches, metric=g)
 ```
 
 A de Rham map is used to map the metric onto each p-simplex of the complex during various metric dependent calculations.
@@ -174,7 +174,7 @@ This means that only the corners of the simplices will be sampled.
 The number of subdivisions used when mapping the metric onto each simplex can be changed with the subdivisions keyword.
 
 ```python
-sc = SimplicialComplex(vertices, simplices, stitches=stitches, metric=g, subdivisions=10)
+sc = SimplicialComplex(simplices, vertices, stitches=stitches, metric=g, subdivisions=10)
 ```
 
 #Cohomological Operators

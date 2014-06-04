@@ -74,9 +74,9 @@ def random_mesh(N, dim, pbc=[]):
         vertices[index] = vertex
     
     vertices = vstack((boundary, vertices))
-    simplices = Delaunay(vertices).simplices.astype("uint")
+    simplices = Delaunay(vertices).simplices
     
-    return vertices.astype("complex"), simplices, stitches
+    return simplices.astype("uint"), vertices.astype("complex"), stitches
 
 @profile(True)
 @boundscheck(False)
