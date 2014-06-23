@@ -4,7 +4,7 @@ from numpy import zeros, empty_like, empty, asarray, vstack, delete
 from numpy.random import rand
 from scipy.spatial import Delaunay
 from itertools import combinations, product
-from functools import partial
+from collections import OrderedDict
 
 from .parallel import parmap
 
@@ -91,7 +91,7 @@ def embed(grid_indices, coordinates):
 @boundscheck(False)
 @wraparound(False) 
 def grid_indices(shape, start=0):
-    grid_indices = {}
+    grid_indices = OrderedDict()
     for index, index_list in enumerate(product(*[range(max_index) for max_index in shape])):
         grid_indices[index_list] = index + start
     return grid_indices
