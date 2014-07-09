@@ -1,14 +1,16 @@
 __all__ = ['connect', 'stitch', 'embed', 'grid', 'pbc_stitches', 'grid_indices', 'symmetric_grid', 'random_mesh']
 
-from numpy import zeros, empty_like, empty, asarray, vstack, delete
+from numpy import zeros, empty, asarray, vstack, delete
 from numpy.random import rand
 from scipy.spatial import Delaunay
 from itertools import combinations, product
 from collections import OrderedDict
 
-from .parallel import parmap
+from .parallel import parmapreduce
 
 from cython cimport boundscheck, wraparound, profile
+from cpython cimport bool
+from numpy cimport ndarray
 
 @profile(True)
 @boundscheck(False)
@@ -98,6 +100,32 @@ def grid_indices(shape, start=0):
 
 @profile(True)
 @boundscheck(False)
+@wraparound(False) 
+cdef _symmetric_grid(tuple index_list0, ndarray[char, ndim=3] dindices, grid_indices):
+    cdef ndarray[unsigned long int, ndim=1] index_list = asarray(index_list0, "uint")
+    cdef ndarray[char, ndim=2] dindex = empty((dindices.shape[1], dindices.shape[2]), "int8")
+    cdef ndarray[char, ndim=1] indices = empty(dindex.shape[1], "int8")
+    cdef list simplex, simplices = []
+    cdef bool valid_index
+    
+    if (index_list % 2).any():
+        return []
+    for dindex in dindices:
+        valid_index = True
+        simplex = []
+        for indices in dindex:
+            try:
+                simplex.append(grid_indices[tuple(indices + index_list)])
+            except KeyError:
+                valid_index = False
+                break
+        if valid_index:
+            simplices.append(simplex)
+    
+    return simplices
+
+@profile(True)
+@boundscheck(False)
 def symmetric_grid(grid_indices):
     if not grid_indices:
         return asarray([], dtype="uint")
@@ -124,23 +152,35 @@ def symmetric_grid(grid_indices):
     crange = range(num_axes)
     dindices = asarray(compute_dindices([[[0] * num_axes]]), dtype="int8")
     dindices[:, -1] = zeros(num_axes, dtype="int8")
-    simplices = []
-    for index_list in grid_indices:
-        index_list = asarray(index_list, "uint")
-        if (index_list % 2).any():
-            continue
-        for dindex in dindices:
-            valid_index = True
-            simplex = []
-            for indices in dindex + index_list:
-                try:
-                    simplex.append(grid_indices[tuple(indices)])
-                except KeyError:
-                    valid_index = False
-                    break
-            if valid_index:
-                simplices.append(simplex)
+
+    simplices = parmapreduce(lambda grid_index: _grid(grid_index, dindices, grid_indices), grid_indices)
     simplices = asarray(simplices, dtype="uint")
+    return simplices
+
+@profile(True)
+@boundscheck(False)
+@wraparound(False) 
+cdef _grid(tuple index_list0, ndarray[char, ndim=3] dindices, grid_indices):
+    cdef ndarray[unsigned long int, ndim=1] index_list = asarray(index_list0, "uint")
+    cdef ndarray[char, ndim=2] dindex = empty((dindices.shape[1], dindices.shape[2]), "int8")
+    cdef ndarray[char, ndim=1] indices = empty(dindex.shape[1], "int8")
+    cdef list simplex, simplices = []
+    cdef bool valid_index
+    
+    #if (index_list % 2).any():
+    #    return []
+    for dindex in dindices:
+        valid_index = True
+        simplex = []
+        for indices in dindex:
+            try:
+                simplex.append(grid_indices[tuple(indices + index_list)])
+            except KeyError:
+                valid_index = False
+                break
+        if valid_index:
+            simplices.append(simplex)
+    
     return simplices
 
 @profile(True)
@@ -171,22 +211,8 @@ def grid(grid_indices):
     crange = range(num_axes)
     dindices = asarray(compute_dindices([[[0] * num_axes]]), dtype="int8")
     dindices[:, -1] = zeros(num_axes, dtype="int8")
-    simplices = []
-    for index_list in grid_indices:
-        index_list = asarray(index_list, "uint")
-        #if (index_list % 2).any():
-        #    continue
-        for dindex in dindices:
-            valid_index = True
-            simplex = []
-            for indices in dindex + index_list:
-                try:
-                    simplex.append(grid_indices[tuple(indices)])
-                except KeyError:
-                    valid_index = False
-                    break
-            if valid_index:
-                simplices.append(simplex)
+    
+    simplices = parmapreduce(lambda grid_index: _grid(grid_index, dindices, grid_indices), grid_indices)
     simplices = asarray(simplices, dtype="uint")
     return simplices
 
