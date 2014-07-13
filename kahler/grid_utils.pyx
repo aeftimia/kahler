@@ -15,9 +15,9 @@ from numpy cimport ndarray
 @profile(True)
 @boundscheck(False)
 @wraparound(False)
-def random_mesh(N, dim, pbc=[]):
+def random_mesh(N, dim, pbc=[], alpha=0.5):
     n = N ** (1. / dim)
-    too_close = 0.5 / n
+    too_close = alpha / n
     n = int(n)
     too_close2 = too_close ** 2
 

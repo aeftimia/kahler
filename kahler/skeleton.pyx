@@ -193,7 +193,7 @@ cdef class _Skeleton(object):
     @wraparound(False)
     cpdef double compute_primal_volumes(self, ndarray[complex, ndim=2] points, ndarray[complex, ndim=2] metric):
         cdef ndarray[complex, ndim=2] vecs = points[1:] - points[0]
-        return sqrt(det(vecs.dot(metric).dot(vecs.conj().T)).real)
+        return sqrt(abs(det(vecs.dot(metric).dot(vecs.conj().T)).real))
         
     @profile(True)
     @boundscheck(False)
@@ -215,7 +215,7 @@ cdef class _Skeleton(object):
             primal_points = asarray(reference_simplex)
             primal_vecs = primal_points[1:] - primal_points[0]
             s = sign(det(primal_vecs.dot(metric).dot(dual_vecs_conj)).real)
-            volumes[p_index] += sqrt(det(dual_vecs.dot(metric).dot(dual_vecs_conj)).real) * s
+            volumes[p_index] += sqrt(abs(det(dual_vecs.dot(metric).dot(dual_vecs_conj)).real)) * s
         return volumes
 
     cpdef set compute_unstitched(self, tuple simplex):
