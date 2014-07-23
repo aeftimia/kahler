@@ -3,7 +3,7 @@ from numpy import linspace, asarray, identity, zeros, pi
 from scipy.linalg import eig
 from matplotlib.pylab import show
 
-from scipy.spacial import Delaunay
+from scipy.spatial import Delaunay
 
 vertices, stitches = kahler.random_mesh(150, 2)
 vertices *= pi
