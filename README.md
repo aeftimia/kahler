@@ -43,18 +43,19 @@ Both functions return a 2D numpy array of simplices. Each row is a list of verte
 ##Random Meshes
 
 Random meshes are created without grid indices.
-Instead, kahler's random_mesh function takes the number of points on the interior of the mesh and the dimension of the mesh as arguements.
+Instead, kahler's random\_mesh function takes the number of points on the interior of the mesh and the dimension of the mesh as arguements.
 
 **Example**
 ```python
-simplices, vertices, stitches = kahler.random_mesh(150, 3)
+vertices, stitches = kahler.random_mesh(150, 3)
 ```
 
-In the above example, the mesh will be 3 dimensional and have have 150 points on its interior.
-simplices is a 2D numpy array of simplices as seen in the previous section. vertices is a 2D numpy array of coordinates.
+In the above example, the mesh will be 3 dimensional and have have 150 points on its interior. vertices is a 2D numpy array of coordinates.
 The ith row gives the coordinates of the ith vertex. In the above usage, stitches will be an empty python dictionary.
 random_mesh can take a third argument for imposing periodic boundary conditions.
-This will result in a nonempty dictionary and will be discussed in the next section.
+This will result in stitches becomming a nonempty dictionary and will be discussed in the next section.
+
+random\_mesh can also take a keyword (or fourth argument), alpha. This parameter determines how close the points can be to each other. Statistically speaking, the points would be an average distance of N ^ (1 / dim) apart, wtih N being the number of points on the interior and dim being the dimension of the complex. random_mesh will ensure the points are no closer than alpha * N ^ (1 / dim) apart. alpha is set to 0.5 by default. Increasing alpha will increase the time it takes to randomly generate a suitable set of points.
 
 #Customizing Topology
 
@@ -127,7 +128,7 @@ Say there is more interesting phenomina near y=1. Then one might choose to use a
 Random meshes automatically embed vertices on the unit N-cube. The coordinates of these vertices are returned as shown below:
 
 ```python
-simplices, vertices, stitches = kahler.random_mesh(150, 3, [0,2])
+vertices, stitches = kahler.random_mesh(150, 3, [0,2])
 ```
 
 #Creating a Simplicial Complex
