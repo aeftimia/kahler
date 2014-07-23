@@ -74,7 +74,7 @@ In the above example, the first and third directions are to be periodic. For ran
 
 **Example**
 ```python
-simplices, vertices, stitches = kahler.random_mesh(150, 3, [0, 2])
+vertices, stitches = kahler.random_mesh(150, 3, [0, 2])
 ```
 
 #Embedding the Vertices
