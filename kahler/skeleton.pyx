@@ -13,7 +13,7 @@ from .parallel import parmapreduce, parmap
 from .circumcenter cimport compute_circumcenter
 from .linalg cimport det
 
-from cython cimport boundscheck, wraparound, profile
+from cython cimport boundscheck, wraparound
 from numpy cimport complex, ndarray
 
 class Skeleton(_Skeleton):
@@ -113,7 +113,6 @@ class Skeleton(_Skeleton):
             raise AttributeError(attr + " not found")
 
 cdef class _Skeleton(object):
-    @profile(True)
     @boundscheck(False)
     @wraparound(False)
     cpdef compute_exterior(self):
@@ -146,7 +145,6 @@ cdef class _Skeleton(object):
         self.num_simplices = num_simplices
         self.simplex_to_index = simplex_to_index
 
-    @profile(True)
     @boundscheck(False)
     @wraparound(False)
     def compute_sharp(self):
@@ -188,14 +186,12 @@ cdef class _Skeleton(object):
 
         self.sharp = parmapreduce(compute_sharp, range(self.complex[cdim - 1].num_simplices)).tocsr() / normalize
 
-    @profile(True)
     @boundscheck(False)
     @wraparound(False)
     cpdef double compute_primal_volumes(self, ndarray[complex, ndim=2] points, ndarray[complex, ndim=2] metric):
         cdef ndarray[complex, ndim=2] vecs = points[1:] - points[0]
         return sqrt(abs(det(vecs.dot(metric).dot(vecs.conj().T)).real))
         
-    @profile(True)
     @boundscheck(False)
     @wraparound(False)
     cpdef ndarray[double, ndim=1] compute_dual_volumes(self, tuple simplex, ndarray[complex, ndim=2] metric):

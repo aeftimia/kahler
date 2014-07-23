@@ -2,20 +2,18 @@ __all__ = ['connect', 'stitch', 'embed', 'grid', 'pbc_stitches', 'grid_indices',
 
 from numpy import zeros, empty, asarray, vstack, delete
 from numpy.random import rand
-from scipy.spatial import Delaunay
 from itertools import combinations, product
 from collections import OrderedDict
 
 from .parallel import parmapreduce
 
-from cython cimport boundscheck, wraparound, profile
+from cython cimport boundscheck, wraparound
 from cpython cimport bool
 from numpy cimport ndarray
 
-@profile(True)
 @boundscheck(False)
 @wraparound(False)
-def random_mesh(N, dim, pbc=[], alpha=0.5):
+def random_mesh(N, dim, pbc=[], alpha=0.5):   
     n = N ** (1. / dim)
     too_close = alpha / n
     n = int(n)
@@ -76,11 +74,8 @@ def random_mesh(N, dim, pbc=[], alpha=0.5):
         vertices[index] = vertex
     
     vertices = vstack((boundary, vertices))
-    simplices = Delaunay(vertices).simplices
-    
-    return simplices.astype("uint"), vertices.astype("complex"), stitches
+    return vertices.astype("complex"), stitches
 
-@profile(True)
 @boundscheck(False)
 @wraparound(False)
 def embed(grid_indices, coordinates):
@@ -89,7 +84,6 @@ def embed(grid_indices, coordinates):
         vertices[value] = [c[k] for c, k in zip(coordinates, key)]
     return vertices
 
-@profile(True)
 @boundscheck(False)
 @wraparound(False) 
 def grid_indices(shape, start=0):
@@ -98,7 +92,6 @@ def grid_indices(shape, start=0):
         grid_indices[index_list] = index + start
     return grid_indices
 
-@profile(True)
 @boundscheck(False)
 @wraparound(False) 
 cdef _symmetric_grid(tuple index_list0, ndarray[char, ndim=3] dindices, grid_indices):
@@ -124,7 +117,6 @@ cdef _symmetric_grid(tuple index_list0, ndarray[char, ndim=3] dindices, grid_ind
     
     return simplices
 
-@profile(True)
 @boundscheck(False)
 def symmetric_grid(grid_indices):
     if not grid_indices:
@@ -157,7 +149,6 @@ def symmetric_grid(grid_indices):
     simplices = asarray(simplices, dtype="uint")
     return simplices
 
-@profile(True)
 @boundscheck(False)
 @wraparound(False) 
 cdef _grid(tuple index_list0, ndarray[char, ndim=3] dindices, grid_indices):
@@ -183,7 +174,6 @@ cdef _grid(tuple index_list0, ndarray[char, ndim=3] dindices, grid_indices):
     
     return simplices
 
-@profile(True)
 @boundscheck(False)
 def grid(grid_indices):
     if not grid_indices:

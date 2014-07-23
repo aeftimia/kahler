@@ -2,9 +2,8 @@ __all__ = ['compute_circumcenter']
 
 from numpy import ones, empty
 from scipy.linalg import solve
-from cython cimport boundscheck, wraparound, profile
+from cython cimport boundscheck, wraparound
 
-@profile(True)
 @boundscheck(False)
 @wraparound(False)
 cdef ndarray[complex, ndim=1] compute_circumcenter(ndarray[complex, ndim=2] points, ndarray[complex, ndim=2] metric):

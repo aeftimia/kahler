@@ -1,41 +1,52 @@
-__all__ = ['wedge', 'derham_map', 'parity', 'naive_derham_map']
+__all__ = ['wedge', 'derham_map', 'naive_derham_map']
 
 from numpy import arange, asarray, tensordot, zeros, linspace
 from itertools import product, combinations, permutations, groupby
 from .parallel import parmapreduce, parmap
 
-from cython cimport boundscheck, wraparound, profile
+from cython cimport boundscheck, wraparound
+from cpython cimport bool
 
-def shuffle(S, p):
-    shuffles = []
-    s = set(S)
+@boundscheck(False)
+@wraparound(False)
+cdef list shuffle(S, p):
+    cdef list shuffles = []
+    cdef set s = set(S)
+    cdef tuple p_shuffle
+    
     for p_shuffle in combinations(S, p):
         shuffles.append(p_shuffle + tuple(sorted(s - set(p_shuffle))))
     return shuffles    
 
-def parity(S, perm):
+@boundscheck(False)
+@wraparound(False)
+cdef bool parity(S, indices):
 
-    perm = [dict(zip(S,range(len(S))))[x] for x in perm]
-    n = len(perm)
+    cdef list perm = []
+    cdef unsigned int i, j, n = len(perm)
 
     # Decompose into disjoint cycles. We only need to
     # count the number of cycles to determine the parity
-    num_cycles = 0
-    seen = set()
+    cdef unsigned int num_cycles = 0
+    cdef set seen = set()
+    
+    for i in indices:
+        perm.append(S[i])
+    
     for i in range(n):
         if i in seen:
             continue
         num_cycles += 1
         j = i
-        while True:
+        while j != i:
             assert j not in seen
             seen.add(j)
             j = perm[j]
-            if j == i:
-                break
 
-    return (n - num_cycles) % 2
+    return (n - num_cycles) & True
 
+@boundscheck(False)
+@wraparound(False)
 def wedge(tensor1, tensor2):
     resulting_dimension = tensor1.ndim + tensor2.ndim
     shape = tensor1.shape[0]

@@ -1,9 +1,8 @@
 from numpy import vstack, atleast_2d
 from scipy.linalg import solve
 
-from cython cimport boundscheck, wraparound, profile
+from cython cimport boundscheck, wraparound
 
-@profile(True)
 @boundscheck(False)
 @wraparound(False)
 cdef ndarray[complex, ndim=2] compute_barycentric_gradients(ndarray[complex, ndim=2] points, ndarray[complex, ndim=2] metric):

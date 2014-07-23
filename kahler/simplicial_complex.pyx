@@ -9,7 +9,7 @@ from .parallel import parmap
 from .grid_utils import stitch
 from .barycentric cimport compute_barycentric_gradients
 
-from cython cimport boundscheck, wraparound, profile
+from cython cimport boundscheck, wraparound
 from numpy cimport complex, ndarray   
 
 class SimplicialComplex(_SimplicialComplex):
@@ -70,7 +70,6 @@ class SimplicialComplex(_SimplicialComplex):
             raise AttributeError(attr + " not found")
 
 cdef class _SimplicialComplex(list):
-    @profile(True)
     @boundscheck(False)
     @wraparound(False)
     cpdef list compute_dual_cells(self, tuple simplex, unsigned char p):
