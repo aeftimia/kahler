@@ -184,12 +184,12 @@ Simplicial complexes are really a list of p-skeletons. Each p-skeleton computes 
 These properties are computed as needed--an idea borrowed from PyDEC.
 The following properties are generally of the most interest:
 
-exterior_derivative
-star
-inverse_star
-codifferential
-laplace_beltrami = codifferential dot exterior_derivative
-laplace_derham = laplace_beltrami + exterior_derivative dot codifferential
+* exterior_derivative
+* star
+* inverse_star
+* codifferential
+* laplace_beltrami = codifferential dot exterior_derivative
+* laplace_derham = laplace_beltrami + exterior_derivative dot codifferential
 
 All operators are stored as a sparse csr_matrix (see scipy docs).
 Due to convention, the codifferential acting on p-forms is multiplied by a factor of (-1) ** p.
