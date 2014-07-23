@@ -3,8 +3,13 @@ from numpy import linspace, asarray, identity, zeros, pi
 from scipy.linalg import eig
 from matplotlib.pylab import show
 
-simplices, vertices, stitches = kahler.random_mesh(150, 2)
+from scipy.spacial import Delaunay
+
+vertices, stitches = kahler.random_mesh(150, 2)
 vertices *= pi
+
+simplices = Delaunay(vertices.real).simplices.astype('uint')
+
 sc = kahler.SimplicialComplex(simplices, vertices)
 
 p = 0
